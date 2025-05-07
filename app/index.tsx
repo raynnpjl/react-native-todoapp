@@ -34,6 +34,11 @@ export default function Index() {
 
   const addTask = async () => {
     try {
+      if (taskText.trim() === '') {
+        Keyboard.dismiss()
+        return;
+      }
+
       const newTask = {
         id: Math.random(),
         title: taskText,
