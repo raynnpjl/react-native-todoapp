@@ -5,23 +5,23 @@ import { useEffect, useState } from "react";
 import { FlatList, Image, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type taskType = {
+type taskType = { // Create new type - task containing id, title and isDone
   id: number;
   title: string;
   isDone: boolean;
 }
  
 export default function Index() {
-  const [tasks, setTasks] = useState<taskType[]>([]);
-  const [taskText, setTaskText] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [unfTasks, setUnfTasks] = useState<taskType[]>([]);
+  const [tasks, setTasks] = useState<taskType[]>([]); // State for tasks -  all the task that was created
+  const [taskText, setTaskText] = useState<string>(''); // State for "add new task" text
+  const [searchQuery, setSearchQuery] = useState<string>(''); // State for text/query in search bar
+  const [unfTasks, setUnfTasks] = useState<taskType[]>([]); // State used to log tasks in a "backup" state to update main state when search bar query is cleared
 
-  useEffect(() => {
+  useEffect(() => { // Runs when app is started up to check for tasks in AsyncStorage
     const getTask = async () => {
       try {
         const tasks = await AsyncStorage.getItem('my-task');
-        if ( tasks !== null) {
+        if ( tasks !== null) { // If task array not empty set task in their respective state
           setTasks(JSON.parse(tasks));
           setUnfTasks(JSON.parse(tasks));
         }
@@ -34,9 +34,9 @@ export default function Index() {
 
   const addTask = async () => {
     try {
-      if (taskText.trim() === '') {
+      if (taskText.trim() === '') { // Check whether "add new task" text is empty
         Keyboard.dismiss()
-        return;
+        return; // If empty, return and not add task
       }
 
       const newTask = {
@@ -44,10 +44,10 @@ export default function Index() {
         title: taskText,
         isDone: false,
       };
-      tasks.push(newTask);
+      tasks.push(newTask); // Add new task into task array
       setTasks(tasks);
       setUnfTasks(tasks);
-      await AsyncStorage.setItem('my-task', JSON.stringify(tasks));
+      await AsyncStorage.setItem('my-task', JSON.stringify(tasks)); // Add new task into AsyncStorage
       setTaskText('');
       Keyboard.dismiss();
     } catch (error) {
@@ -57,8 +57,8 @@ export default function Index() {
 
   const deleteTask = async (id: number) => {
     try {
-      const newTasks = tasks.filter((task) => task.id !== id);
-      await AsyncStorage.setItem('my-task', JSON.stringify(newTasks));
+      const newTasks = tasks.filter((task) => task.id !== id); // Filter out all task that is not 'deleted'
+      await AsyncStorage.setItem('my-task', JSON.stringify(newTasks)); // Update AsyncStorage with filtered task
       setTasks(newTasks);
       setUnfTasks(newTasks);
     } catch (error) {
@@ -68,13 +68,13 @@ export default function Index() {
 
   const taskCheck = async (id: number) => {
     try {
-      const newTasks = tasks.map((task) => {
-        if (task.id === id) {
-          task.isDone = !task.isDone;
+      const newTasks = tasks.map((task) => { // Iterate through each task
+        if (task.id === id) { // If task matches ID that pass through
+          task.isDone = !task.isDone; // Change boolean value of isDone (toggled), false => true, true => false
         }
         return task
       });
-      await AsyncStorage.setItem("my-task", JSON.stringify(newTasks));
+      await AsyncStorage.setItem("my-task", JSON.stringify(newTasks)); // Update AsyncStorage with new task array
       setTasks(newTasks);
       setUnfTasks(newTasks);
     } catch (error) {
@@ -83,11 +83,11 @@ export default function Index() {
   };
 
   const onSearch = (query: string) => {
-    if (query == '') {
-      setTasks(unfTasks);
+    if (query == '') { // If search bar is cleared
+      setTasks(unfTasks); // Set main task state with 'backup' task array 
     } else {
         const filteredTasks = tasks.filter((task) => 
-          task.title.toLowerCase().includes(query.toLowerCase())
+          task.title.toLowerCase().includes(query.toLowerCase()) // Checks for task matching search query
         );
         setTasks(filteredTasks);
     }
